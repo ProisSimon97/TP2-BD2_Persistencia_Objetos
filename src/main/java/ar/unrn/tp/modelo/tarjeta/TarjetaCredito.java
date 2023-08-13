@@ -23,11 +23,11 @@ public class TarjetaCredito implements Tarjeta {
         return this.fondosDisponibles;
     }
 
-    public boolean aplica(String nombreTarjeta) {
-        return this.nombre.equals(nombreTarjeta);
+    public boolean aplica(Tarjeta tarjeta) {
+        return this.nombre.equals(tarjeta.getNombre());
     }
     @Override
-    public void realizarCompra(double monto) {
+    public void realizarPago(double monto) {
         if (!estaActiva()) {
             throw new RuntimeException("La tarjeta no está activa");
         }
@@ -37,5 +37,9 @@ public class TarjetaCredito implements Tarjeta {
         }
 
         this.fondosDisponibles -= monto;
+    }
+    @Override
+    public String getNombre() {
+        return nombre;
     }
 }

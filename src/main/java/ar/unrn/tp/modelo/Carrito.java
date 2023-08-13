@@ -1,7 +1,7 @@
 package ar.unrn.tp.modelo;
 
 import ar.unrn.tp.modelo.promocion.PromocionProducto;
-import ar.unrn.tp.modelo.promocion.PromocionVenta;
+import ar.unrn.tp.modelo.promocion.PromocionCompra;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
 import java.time.LocalDateTime;
@@ -20,22 +20,22 @@ public class Carrito {
         this.productos.add(Producto.crearProducto(producto));
     }
 
-    public double calcularMontoTotalConDescuento(PromocionProducto promocionProducto, PromocionVenta promocionVenta, Tarjeta tarjeta) {
+    public double calcularMontoTotalConDescuento(PromocionProducto promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
         double total = 0;
 
         for (Producto producto : productos) {
             total += promocionProducto.calcularDescuento(producto.getPrecio(), producto.getMarca());
         }
-        return promocionVenta.calcularDescuento(total, tarjeta);
+        return promocionCompra.calcularDescuento(total, tarjeta);
     }
 
-    public Venta realizarPago(PromocionProducto promocionProducto, PromocionVenta promocionVenta, Tarjeta tarjeta) {
+    public Venta realizarCompra(PromocionProducto promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
 
-        double totalCompra = calcularMontoTotalConDescuento(promocionProducto, promocionVenta, tarjeta);
+        double totalCompra = calcularMontoTotalConDescuento(promocionProducto, promocionCompra, tarjeta);
 
         try {
 
-            tarjeta.realizarCompra(totalCompra);
+            tarjeta.realizarPago(totalCompra);
             return new Venta(LocalDateTime.now(), this.cliente, productos, totalCompra);
 
         } catch(RuntimeException e) {

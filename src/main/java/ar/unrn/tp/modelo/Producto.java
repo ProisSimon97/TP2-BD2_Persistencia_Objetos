@@ -25,7 +25,7 @@ public class Producto {
         return this.precio;
     }
 
-    public String getMarca() {
-        return this.marca.getTipo();
+    public Marca getMarca() {
+        return this.marca;
     }
 }
