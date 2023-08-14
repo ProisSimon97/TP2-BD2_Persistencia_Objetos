@@ -13,7 +13,7 @@ public class Tienda {
     }
 
     public void agregarProducto(Producto producto) {
-        productos.add(producto);
+        productos.add(Producto.crearProducto(producto));
     }
 
     public void agregarVenta(Venta venta) {

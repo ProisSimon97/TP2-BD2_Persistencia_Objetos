@@ -21,6 +21,10 @@ public class Producto {
         return new Producto(producto.codigo, producto.descripcion, producto.categoria, producto.precio, producto.marca);
     }
 
+    public boolean esMarca(Marca marca) {
+        return this.marca.equals(marca);
+    }
+
     public double getPrecio() {
         return this.precio;
     }

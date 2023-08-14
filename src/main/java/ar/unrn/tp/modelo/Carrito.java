@@ -24,9 +24,9 @@ public class Carrito {
         double total = 0;
 
         for (Producto producto : productos) {
-            total += promocionProducto.calcularDescuento(producto.getPrecio(), producto.getMarca());
+            total += producto.getPrecio() - (producto.getPrecio() * promocionProducto.calcularDescuento(producto));
         }
-        return promocionCompra.calcularDescuento(total, tarjeta);
+        return total - (total * promocionCompra.calcularDescuento(tarjeta));
     }
 
     public Venta realizarCompra(PromocionProducto promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {

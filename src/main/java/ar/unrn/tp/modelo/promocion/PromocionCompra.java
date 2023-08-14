@@ -1,11 +1,12 @@
 package ar.unrn.tp.modelo.promocion;
 
+import ar.unrn.tp.modelo.Marca;
+import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
-import ar.unrn.tp.modelo.tarjeta.TarjetaCredito;
 
 import java.time.LocalDateTime;
 
-public class PromocionCompra extends Promocion<TarjetaCredito> {
+public class PromocionCompra extends Promocion {
 
     private Tarjeta tarjeta;
     public PromocionCompra(LocalDateTime fechaInicio, LocalDateTime fechaFin, double descuento, Tarjeta tarjeta) {
@@ -14,13 +15,20 @@ public class PromocionCompra extends Promocion<TarjetaCredito> {
     }
 
     @Override
-    public double calcularDescuento(double monto, TarjetaCredito tarjeta) {
+    public double calcularDescuento(Tarjeta tarjeta) {
         LocalDateTime fechaActual = LocalDateTime.now();
 
-        if (fechaActual.isAfter(fechaInicio) && fechaActual.isBefore(fechaFin) && this.tarjeta.aplica(tarjeta)) {
-            return monto * descuento / 100.0;
+        if(tarjeta.aplica(this.tarjeta)) {
+            if (fechaActual.isAfter(fechaInicio) && fechaActual.isBefore(fechaFin) && this.tarjeta.aplica(tarjeta)) {
+                return this.descuento;
+            }
         }
 
-        return monto;
+        return 0.0;
+    }
+
+    @Override
+    public double calcularDescuento(Producto producto) {
+        return 0;
     }
 }

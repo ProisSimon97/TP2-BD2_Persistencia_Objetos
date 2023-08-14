@@ -1,6 +1,6 @@
 package ar.unrn.tp.modelo;
 
-import ar.unrn.tp.modelo.tarjeta.TarjetaCredito;
+import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
 import java.util.List;
 
@@ -9,9 +9,9 @@ public class Cliente {
     private String apellido;
     private String dni;
     private String email;
-    private List<TarjetaCredito> tarjetas;
+    private List<Tarjeta> tarjetas;
 
-    public Cliente(String nombre, String apellido, String dni, String email, List<TarjetaCredito> tarjetas) {
+    public Cliente(String nombre, String apellido, String dni, String email, List<Tarjeta> tarjetas) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.dni = dni;

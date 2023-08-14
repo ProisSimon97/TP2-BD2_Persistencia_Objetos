@@ -1,11 +1,12 @@
 package ar.unrn.tp.modelo.promocion;
 
 import ar.unrn.tp.modelo.Marca;
+import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
 import java.time.LocalDateTime;
 
-public class PromocionProducto extends Promocion<Marca> {
+public class PromocionProducto extends Promocion {
 
     private Marca marca;
 
@@ -15,20 +16,20 @@ public class PromocionProducto extends Promocion<Marca> {
     }
 
     @Override
-    public double calcularDescuento(double monto, Marca marca) {
+    public double calcularDescuento(Producto producto) {
         LocalDateTime fechaActual = LocalDateTime.now();
 
-        if (fechaActual.isAfter(fechaInicio) && fechaActual.isBefore(fechaFin) && aplica(marca)) {
-            return monto * descuento / 100.0;
+        if(producto.esMarca(this.marca)) {
+            if (fechaActual.isAfter(fechaInicio) && fechaActual.isBefore(fechaFin)) {
+                return this.descuento;
+            }
         }
 
-        return monto;
+        return 0.0;
     }
 
-    public boolean aplica(Marca marca) {
-        if(this.marca.getTipo().equals(marca.getTipo()))
-            return true;
-
-        return false;
+    @Override
+    public double calcularDescuento(Tarjeta tarjeta) {
+        return 0;
     }
 }
