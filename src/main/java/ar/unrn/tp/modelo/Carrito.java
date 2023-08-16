@@ -4,7 +4,7 @@ import ar.unrn.tp.modelo.promocion.PromocionProducto;
 import ar.unrn.tp.modelo.promocion.PromocionCompra;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class Carrito {
         try {
 
             tarjeta.realizarPago(totalCompra);
-            return new Venta(LocalDateTime.now(), this.cliente, productos, totalCompra);
+            return new Venta(LocalDate.now(), this.cliente, productos, totalCompra);
 
         } catch(RuntimeException e) {
             throw e;

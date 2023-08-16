@@ -19,4 +19,11 @@ public class Tienda {
     public void agregarVenta(Venta venta) {
         ventas.add(venta);
     }
+
+    public boolean estadoDeVentas() {
+        if(this.ventas != null && !this.ventas.isEmpty())
+            return true;
+
+        return false;
+    }
 }

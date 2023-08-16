@@ -9,7 +9,12 @@ public class Producto {
     private double precio;
     private Marca marca;
 
-    private Producto(String codigo, String descripcion, Categoria categoria, double precio, Marca marca) {
+    public Producto(String codigo, String descripcion, Categoria categoria, double precio, Marca marca) throws RuntimeException {
+
+        if (categoria == null || descripcion == null || codigo == null) {
+            throw new RuntimeException("Los datos proporcionados no son válidos");
+        }
+
         this.codigo = codigo;
         this.descripcion = descripcion;
         this.categoria = categoria;

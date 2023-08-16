@@ -4,20 +4,20 @@ import ar.unrn.tp.modelo.Marca;
 import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class PromocionProducto extends Promocion {
 
     private Marca marca;
 
-    public PromocionProducto(LocalDateTime fechaInicio, LocalDateTime fechaFin, double descuento, Marca marca) {
+    public PromocionProducto(LocalDate fechaInicio, LocalDate fechaFin, double descuento, Marca marca) {
         super(fechaInicio, fechaFin, descuento);
         this.marca = marca;
     }
 
     @Override
     public double calcularDescuento(Producto producto) {
-        LocalDateTime fechaActual = LocalDateTime.now();
+        LocalDate fechaActual = LocalDate.now();
 
         if(producto.esMarca(this.marca)) {
             if (fechaActual.isAfter(fechaInicio) && fechaActual.isBefore(fechaFin)) {

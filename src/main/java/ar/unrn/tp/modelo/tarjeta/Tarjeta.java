@@ -6,9 +6,16 @@ public class Tarjeta {
     private boolean activa;
     private double fondosDisponibles;
 
-    public Tarjeta(double fondosDisponibles) {
+    public Tarjeta(double fondosDisponibles, String nombre, String numeroTarjeta) {
         this.activa = true;
+        this.numeroTarjeta = numeroTarjeta;
+        this.nombre = nombre;
         this.fondosDisponibles = fondosDisponibles;
+    }
+
+    public Tarjeta(String nombre) {
+        this.activa = true;
+        this.nombre = nombre;
     }
 
     public boolean estaActiva() {
@@ -20,7 +27,7 @@ public class Tarjeta {
     }
 
     public boolean aplica(Tarjeta tarjeta) {
-        return this.equals(tarjeta);
+        return this.nombre.equals(tarjeta.getNombre());
     }
 
     public void realizarPago(double monto) {
