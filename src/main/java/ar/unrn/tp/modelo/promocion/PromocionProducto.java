@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 public class PromocionProducto extends Promocion {
 
+    private static final double SIN_DESCUENTO = 0.0;
     private Marca marca;
 
     public PromocionProducto(LocalDate fechaInicio, LocalDate fechaFin, double descuento, Marca marca) {
@@ -19,13 +20,23 @@ public class PromocionProducto extends Promocion {
     public double calcularDescuento(Producto producto) {
         LocalDate fechaActual = LocalDate.now();
 
+        if(aplicaDescuento(producto)) {
+            return this.descuento;
+        }
+
+        return SIN_DESCUENTO;
+    }
+
+    private boolean aplicaDescuento(Producto producto) {
+        LocalDate fechaActual = LocalDate.now();
+
         if(producto.esMarca(this.marca)) {
             if (fechaActual.isAfter(fechaInicio) && fechaActual.isBefore(fechaFin)) {
-                return this.descuento;
+                return true;
             }
         }
 
-        return 0.0;
+        return false;
     }
 
     @Override

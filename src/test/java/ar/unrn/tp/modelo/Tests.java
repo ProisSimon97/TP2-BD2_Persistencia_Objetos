@@ -29,8 +29,8 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
-        PromocionProducto promoProducto = new PromocionProducto(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 14), 0.05, marca);
-        PromocionCompra promoCompra = new PromocionCompra(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 14), 0.08, tarjeta);
+        PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().minusDays(1), 0.05, marca);
+        PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().minusDays(1), 0.08, tarjeta);
 
         Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 25000);
     }
@@ -53,8 +53,8 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
-        PromocionProducto promoProducto = new PromocionProducto(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 17), 0.05, marca);
-        PromocionCompra promoCompra = new PromocionCompra(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 14), 0.08, tarjeta);
+        PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.05, marca);
+        PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(5), LocalDate.now().minusDays(3), 0.08, tarjeta);
 
         Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 23750);
     }
@@ -77,8 +77,8 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
-        PromocionProducto promoProducto = new PromocionProducto(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 14), 0.05, marca);
-        PromocionCompra promoCompra = new PromocionCompra(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 17), 0.08, tarjeta);
+        PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().minusDays(1), 0.05, marca);
+        PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.08, tarjeta);
 
         Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 23000);
     }
@@ -101,8 +101,8 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
-        PromocionProducto promoProducto = new PromocionProducto(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 17), 0.05, marca);
-        PromocionCompra promoCompra = new PromocionCompra(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 17), 0.08, tarjeta);
+        PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.05, marca);
+        PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.08, tarjeta);
 
         Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 21850);
     }
@@ -125,8 +125,8 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
-        PromocionProducto promoProducto = new PromocionProducto(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 17), 0.05, marca);
-        PromocionCompra promoCompra = new PromocionCompra(LocalDate.of(2023, 8, 13), LocalDate.of(2023, 8, 17), 0.08, tarjeta);
+        PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.05, marca);
+        PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.08, tarjeta);
 
         Tienda tienda = new Tienda();
         tienda.agregarVenta(carrito.realizarCompra(promoProducto, promoCompra, tarjetaCliente));
@@ -165,7 +165,7 @@ public class Tests {
         Marca marca = new Marca("Comarca");
 
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
-            new PromocionProducto(LocalDate.of(2023, 8, 17), LocalDate.of(2023, 8, 17), 0.05, marca);;
+            new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().minusDays(3), 0.05, marca);
         });
 
         Assertions.assertEquals("Las fechas de inicio y fin no pueden ser iguales", exception.getMessage());
