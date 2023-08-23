@@ -3,12 +3,20 @@ package ar.unrn.tp.modelo.promocion;
 import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import java.time.LocalDate;
 
+@Entity
 public class PromocionCompra extends Promocion {
 
     private static final double SIN_DESCUENTO = 0.0;
+    @ManyToOne
     private Tarjeta tarjeta;
+
+    protected PromocionCompra() { }
+
     public PromocionCompra(LocalDate fechaInicio, LocalDate fechaFin, double descuento, Tarjeta tarjeta) {
         super(fechaInicio, fechaFin, descuento);
         this.tarjeta = tarjeta;

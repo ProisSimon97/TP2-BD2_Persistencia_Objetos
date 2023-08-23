@@ -2,12 +2,10 @@ package ar.unrn.tp.modelo;
 import ar.unrn.tp.modelo.promocion.PromocionCompra;
 import ar.unrn.tp.modelo.promocion.PromocionProducto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
-import ar.unrn.tp.modelo.Marca;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class Tests {
 

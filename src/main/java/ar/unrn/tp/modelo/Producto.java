@@ -1,13 +1,22 @@
 package ar.unrn.tp.modelo;
 
-import ar.unrn.tp.modelo.tarjeta.Tarjeta;
+import javax.persistence.*;
 
+@Entity
 public class Producto {
+    @Id
+    @GeneratedValue
+    private Long id;
+    @Column(unique = true)
     private String codigo;
     private String descripcion;
+    @ManyToOne
     private Categoria categoria;
     private double precio;
+    @Embedded
     private Marca marca;
+
+    protected Producto() { }
 
     public Producto(String codigo, String descripcion, Categoria categoria, double precio, Marca marca) throws RuntimeException {
 
@@ -34,7 +43,65 @@ public class Producto {
         return this.precio;
     }
 
+    public Long id() { return this.id; }
+
     public Marca getMarca() {
         return this.marca;
+    }
+
+    private Long getId() {
+        return id;
+    }
+
+    private void setId(Long id) {
+        this.id = id;
+    }
+
+    private String getCodigo() {
+        return codigo;
+    }
+
+    private void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    private String getDescripcion() {
+        return descripcion;
+    }
+
+    private void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    private Categoria getCategoria() {
+        return categoria;
+    }
+
+    private void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
+
+    private void setPrecio(double precio) {
+        this.precio = precio;
+    }
+
+    private void setMarca(Marca marca) {
+        this.marca = marca;
+    }
+
+    public void codigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public void descripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public void precio(double precio) {
+        this.precio = precio;
+    }
+
+    public void categoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 }

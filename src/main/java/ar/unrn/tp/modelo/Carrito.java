@@ -16,6 +16,10 @@ public class Carrito {
         this.productos = new ArrayList<>();
     }
 
+    public Carrito() {
+        this.productos = new ArrayList<>();
+    }
+
     public void agregarProducto(Producto producto) {
         this.productos.add(Producto.crearProducto(producto));
     }
@@ -34,7 +38,6 @@ public class Carrito {
         double totalCompra = calcularMontoTotalConDescuento(promocionProducto, promocionCompra, tarjeta);
 
         try {
-
             tarjeta.realizarPago(totalCompra);
             return new Venta(LocalDate.now(), this.cliente, productos, totalCompra);
 
