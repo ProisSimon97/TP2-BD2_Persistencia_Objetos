@@ -24,16 +24,24 @@ public class Carrito {
         this.productos.add(Producto.crearProducto(producto));
     }
 
-    public double calcularMontoTotalConDescuento(PromocionProducto promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
+    public double calcularMontoTotalConDescuento(List<PromocionProducto> promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
         double total = 0;
 
         for (Producto producto : productos) {
-            total += producto.getPrecio() - (producto.getPrecio() * promocionProducto.calcularDescuento(producto));
+
+            total += producto.getPrecio();
+
+            double descuentos = promocionProducto.stream()
+                    .mapToDouble(promo -> producto.getPrecio() * promo.calcularDescuento(producto))
+                    .sum();
+
+            total -= descuentos;
+
         }
         return total - (total * promocionCompra.calcularDescuento(tarjeta));
     }
 
-    public Venta realizarCompra(PromocionProducto promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
+    public Venta realizarCompra(List <PromocionProducto> promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
 
         double totalCompra = calcularMontoTotalConDescuento(promocionProducto, promocionCompra, tarjeta);
 

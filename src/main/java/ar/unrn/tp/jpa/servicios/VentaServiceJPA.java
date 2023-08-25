@@ -52,7 +52,7 @@ public class VentaServiceJPA implements VentaService {
 
             TypedQuery<PromocionProducto> queryPromocionesProducto = em.createQuery("select p from PromocionProducto p where :now between p.fechaInicio and p.fechaFin", PromocionProducto.class);
             queryPromocionesProducto.setParameter("now", LocalDate.now());
-            PromocionProducto promocionProductos = queryPromocionesProducto.getSingleResult();
+            List<PromocionProducto> promocionesProducto = queryPromocionesProducto.getResultList();
 
             TypedQuery<PromocionCompra> queryPromocionesCompra = em.createQuery("select p from PromocionCompra p where :now between p.fechaInicio and p.fechaFin", PromocionCompra.class);
             queryPromocionesCompra.setParameter("now", LocalDate.now());
@@ -67,7 +67,7 @@ public class VentaServiceJPA implements VentaService {
                 carrito.agregarProducto(p);
             });
 
-            Venta venta = carrito.realizarCompra(promocionProductos, promocionCompra, tarjeta);
+            Venta venta = carrito.realizarCompra(promocionesProducto, promocionCompra, tarjeta);
 
             em.persist(venta);
 
@@ -103,11 +103,13 @@ public class VentaServiceJPA implements VentaService {
             queryProductos.setParameter("productos", productos);
             List<Producto> productosBd = queryProductos.getResultList();
 
-            TypedQuery<PromocionProducto> queryPromocionesProducto = em.createQuery("select p from PromocionProducto p where :now between p.fechaInicio and p.fechaFin", PromocionProducto.class);
+            TypedQuery<PromocionProducto> queryPromocionesProducto = em.createQuery("select p from PromocionProducto p where :now between p.fechaInicio and p.fechaFin",
+                    PromocionProducto.class);
             queryPromocionesProducto.setParameter("now", LocalDate.now());
-            PromocionProducto promocionProductos = queryPromocionesProducto.getSingleResult();
+            List<PromocionProducto> promocionesProducto = queryPromocionesProducto.getResultList();
 
-            TypedQuery<PromocionCompra> queryPromocionesCompra = em.createQuery("select p from PromocionCompra p where :now between p.fechaInicio and p.fechaFin", PromocionCompra.class);
+            TypedQuery<PromocionCompra> queryPromocionesCompra = em.createQuery("select p from PromocionCompra p where :now between p.fechaInicio and p.fechaFin",
+                    PromocionCompra.class);
             queryPromocionesCompra.setParameter("now", LocalDate.now());
             PromocionCompra promocionCompra = queryPromocionesCompra.getSingleResult();
 
@@ -117,7 +119,7 @@ public class VentaServiceJPA implements VentaService {
                 carrito.agregarProducto(p);
             });
 
-            return (float) carrito.calcularMontoTotalConDescuento(promocionProductos, promocionCompra, tarjeta);
+            return (float) carrito.calcularMontoTotalConDescuento(promocionesProducto, promocionCompra, tarjeta);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

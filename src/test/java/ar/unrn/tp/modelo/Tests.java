@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tests {
 
@@ -27,10 +29,14 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
+        List<PromocionProducto> promocionesProducto = new ArrayList<>();
+
         PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().minusDays(1), 0.05, marca);
+        promocionesProducto.add(promoProducto);
+
         PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().minusDays(1), 0.08, tarjeta);
 
-        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 25000);
+        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promocionesProducto, promoCompra, tarjetaCliente), 25000);
     }
 
     @Test
@@ -51,10 +57,14 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
+        List<PromocionProducto> promocionesProducto = new ArrayList<>();
+
         PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.05, marca);
+        promocionesProducto.add(promoProducto);
+
         PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(5), LocalDate.now().minusDays(3), 0.08, tarjeta);
 
-        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 23750);
+        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promocionesProducto, promoCompra, tarjetaCliente), 23750);
     }
 
     @Test
@@ -75,10 +85,14 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
+        List<PromocionProducto> promocionesProducto = new ArrayList<>();
+
         PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().minusDays(1), 0.05, marca);
+        promocionesProducto.add(promoProducto);
+
         PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.08, tarjeta);
 
-        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 23000);
+        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promocionesProducto, promoCompra, tarjetaCliente), 23000);
     }
 
     @Test
@@ -99,10 +113,13 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
+        List<PromocionProducto> promocionesProducto = new ArrayList<>();
         PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.05, marca);
+        promocionesProducto.add(promoProducto);
+
         PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.08, tarjeta);
 
-        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promoProducto, promoCompra, tarjetaCliente), 21850);
+        Assertions.assertEquals(carrito.calcularMontoTotalConDescuento(promocionesProducto, promoCompra, tarjetaCliente), 21850);
     }
 
     @Test
@@ -123,11 +140,14 @@ public class Tests {
         carrito.agregarProducto(p1);
         carrito.agregarProducto(p2);
 
+        List<PromocionProducto> promocionesProducto = new ArrayList<>();
         PromocionProducto promoProducto = new PromocionProducto(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.05, marca);
+        promocionesProducto.add(promoProducto);
+
         PromocionCompra promoCompra = new PromocionCompra(LocalDate.now().minusDays(3), LocalDate.now().plusDays(3), 0.08, tarjeta);
 
         Tienda tienda = new Tienda();
-        tienda.agregarVenta(carrito.realizarCompra(promoProducto, promoCompra, tarjetaCliente));
+        tienda.agregarVenta(carrito.realizarCompra(promocionesProducto, promoCompra, tarjetaCliente));
 
         Assertions.assertTrue(tienda.estadoDeVentas());
     }
