@@ -2,12 +2,13 @@ package ar.unrn.tp.modelo;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
 public class Categoria {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String tipo;
 
@@ -31,5 +32,20 @@ public class Categoria {
 
     private void setTipo(String tipo) {
         this.tipo = tipo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Categoria categoria = (Categoria) o;
+
+        return tipo != null ? tipo.equals(categoria.tipo) : categoria.tipo == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return tipo != null ? tipo.hashCode() : 0;
     }
 }

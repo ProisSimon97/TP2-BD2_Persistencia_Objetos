@@ -43,6 +43,8 @@ public class PromocionProducto extends Promocion {
         return false;
     }
 
+    public boolean esMarca(String marca) { return this.marca.getTipo().equals(marca); }
+
     @Override
     public double calcularDescuento(Tarjeta tarjeta) {
         return 0;

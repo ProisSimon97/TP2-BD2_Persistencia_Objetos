@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 @Entity
 public class Cliente {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String nombre;
     private String apellido;
@@ -39,6 +39,20 @@ public class Cliente {
         this.email = email;
         this.tarjetas = new ArrayList<>();
     }
+
+    public Cliente(Long id, String nombre, String apellido, String dni, String email) {
+        if (dni == null || dni.isEmpty() || nombre == null || nombre.isEmpty() || apellido == null || apellido.isEmpty() ||
+                !isValidEmail(email)) {
+            throw new RuntimeException("Los datos proporcionados no son válidos");
+        }
+
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.dni = dni;
+        this.email = email;
+        this.tarjetas = new ArrayList<>();
+    }
+
     private boolean isValidEmail(String email) {
         if (email == null) {
             return false;
@@ -47,9 +61,39 @@ public class Cliente {
         Matcher matcher = EMAIL_REGEX.matcher(email);
         return matcher.matches();
     }
+
+    public boolean miTarjeta(Tarjeta tarjeta) {
+        return this.tarjetas.stream().anyMatch(t -> t.esTarjeta(tarjeta));
+    }
+
+    public Integer misTarjetas() {
+        return this.tarjetas.size();
+    }
+
     public void agregarTarjeta(Tarjeta tarjeta) {
         this.tarjetas.add(tarjeta);
     }
+
+    public Long id() {
+        return this.id;
+    }
+
+    public boolean esNombre(String nombre) {
+        return this.nombre.equals(nombre);
+    }
+
+    public boolean esApellido(String apellido) {
+        return this.apellido.equals(apellido);
+    }
+
+    public boolean esDni(String dni) {
+        return this.dni.equals(dni);
+    }
+
+    public boolean esEmail(String email) {
+        return this.email.equals(email);
+    }
+
     private Long getId() {
         return id;
     }

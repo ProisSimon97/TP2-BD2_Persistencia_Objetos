@@ -5,7 +5,6 @@ import ar.unrn.tp.modelo.Carrito;
 import ar.unrn.tp.modelo.Cliente;
 import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.Venta;
-import ar.unrn.tp.modelo.promocion.Promocion;
 import ar.unrn.tp.modelo.promocion.PromocionCompra;
 import ar.unrn.tp.modelo.promocion.PromocionProducto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
@@ -13,7 +12,6 @@ import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class VentaServiceJPA implements VentaService {
 
@@ -32,15 +30,16 @@ public class VentaServiceJPA implements VentaService {
         try {
             tx.begin();
 
-            TypedQuery<Long> query = em.createQuery("select count(c) from Cliente c join c.tarjetas t where c.id = :idCliente and t.id = :idTarjeta", Long.class);
-            query.setParameter("idCliente", idCliente);
-            query.setParameter("idTarjeta", idTarjeta);
+            Cliente cliente = em.find(Cliente.class, idCliente);
+            if (cliente == null)
+                throw new RuntimeException("No existe el cliente solicitado");
 
-            Long cant = query.getSingleResult();
+            Tarjeta tarjeta = em.find(Tarjeta.class, idTarjeta);
+            if (tarjeta == null)
+                throw new RuntimeException("No existe la tarjeta solicitada");
 
-            if(cant <= 0) {
-                throw new RuntimeException("El cliente no existe o no tiene asociado la tarjeta solicitada");
-            }
+            if (!cliente.miTarjeta(tarjeta))
+                throw new RuntimeException("La tarjeta no coincide con el regristro de tarjetas del cliente");
 
             if(productos.isEmpty()) {
                 throw new RuntimeException("No hay productos para esta lista");
@@ -58,14 +57,9 @@ public class VentaServiceJPA implements VentaService {
             queryPromocionesCompra.setParameter("now", LocalDate.now());
             PromocionCompra promocionCompra = queryPromocionesCompra.getSingleResult();
 
-            Cliente cliente = em.find(Cliente.class, idCliente);
-            Tarjeta tarjeta = em.find(Tarjeta.class, idTarjeta);
-
             Carrito carrito = new Carrito(cliente);
 
-            productosBd.forEach(p -> {
-                carrito.agregarProducto(p);
-            });
+            carrito.agregarProductos(productosBd);
 
             Venta venta = carrito.realizarCompra(promocionesProducto, promocionCompra, tarjeta);
 

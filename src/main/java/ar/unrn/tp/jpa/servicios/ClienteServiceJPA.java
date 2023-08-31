@@ -23,13 +23,14 @@ public class ClienteServiceJPA implements ClienteService {
         try {
             tx.begin();
 
-            TypedQuery<Long> query = em.createQuery("select count(c) from Cliente c where c.dni = :dni", Long.class);
-            query.setParameter("dni", dni);
-            Long cant = query.getSingleResult();
+            TypedQuery<Cliente> q = em.createQuery("SELECT c FROM Cliente c WHERE c.dni = :dni", Cliente.class);
+            q.setParameter("dni", dni);
+            List<Cliente> clientes = q.getResultList();
 
-            if(cant > 0) {
+            if (!clientes.isEmpty())
                 throw new RuntimeException("Ya existe un usuario con ese dni");
-            }
+
+
             Cliente cliente = new Cliente(nombre, apellido, dni, email);
             em.persist(cliente);
 
@@ -54,10 +55,10 @@ public class ClienteServiceJPA implements ClienteService {
         try {
             tx.begin();
 
-            Cliente cliente = em.getReference(Cliente.class, idCliente);
+            Cliente cliente = em.find(Cliente.class, idCliente);
 
             if(cliente == null) {
-                throw new RuntimeException("El cliente solicitado no existe");
+                throw new RuntimeException("No existe el cliente solicitado");
             }
 
             cliente.nombre(nombre);
@@ -86,13 +87,14 @@ public class ClienteServiceJPA implements ClienteService {
         try {
             tx.begin();
 
-            Cliente cliente = em.getReference(Cliente.class, idCliente);
-            //mejor usar find() para consultar si existe?
+            Cliente cliente = em.find(Cliente.class, idCliente);
 
-            if(cliente != null) {
-                Tarjeta tarjeta = new Tarjeta(fondosDisponibles, nombre, nro);
-                cliente.agregarTarjeta(tarjeta);
+            if(cliente == null) {
+                throw new RuntimeException("No existe el cliente solicitado");
             }
+
+            Tarjeta tarjeta = new Tarjeta(fondosDisponibles, nombre, nro);
+            cliente.agregarTarjeta(tarjeta);
 
             tx.commit();
         } catch (Exception e) {

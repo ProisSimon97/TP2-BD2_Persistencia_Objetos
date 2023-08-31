@@ -24,6 +24,13 @@ public class Carrito {
         this.productos.add(Producto.crearProducto(producto));
     }
 
+    public void agregarProductos(List<Producto> productos) {
+        if (productos.isEmpty()) {
+            throw new RuntimeException("La lista de productos no puede ser vacia");
+        }
+        this.productos.addAll(productos);
+    }
+
     public double calcularMontoTotalConDescuento(List<PromocionProducto> promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
         double total = 0;
 
@@ -42,13 +49,11 @@ public class Carrito {
     }
 
     public Venta realizarCompra(List <PromocionProducto> promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
-
         double totalCompra = calcularMontoTotalConDescuento(promocionProducto, promocionCompra, tarjeta);
 
         try {
             tarjeta.realizarPago(totalCompra);
             return new Venta(LocalDate.now(), this.cliente, productos, totalCompra);
-
         } catch(RuntimeException e) {
             throw e;
         }

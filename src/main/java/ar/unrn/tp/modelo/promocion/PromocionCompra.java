@@ -3,14 +3,12 @@ package ar.unrn.tp.modelo.promocion;
 import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import java.time.LocalDate;
 
 @Entity
 public class PromocionCompra extends Promocion {
-
     private static final double SIN_DESCUENTO = 0.0;
     @ManyToOne
     private Tarjeta tarjeta;
@@ -32,7 +30,6 @@ public class PromocionCompra extends Promocion {
     }
 
     private boolean aplicaDescuento(Tarjeta tarjeta) {
-
         LocalDate fechaActual = LocalDate.now();
 
         if(tarjeta.aplica(this.tarjeta)) {
@@ -42,6 +39,10 @@ public class PromocionCompra extends Promocion {
         }
 
         return false;
+    }
+
+    public boolean esTarjeta(Tarjeta tarjeta) {
+        return this.tarjeta.equals(tarjeta);
     }
 
     @Override

@@ -6,10 +6,7 @@ import ar.unrn.tp.modelo.promocion.PromocionCompra;
 import ar.unrn.tp.modelo.promocion.PromocionProducto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 public class DescuentoServiceJPA implements DescuentoService {
@@ -28,9 +25,15 @@ public class DescuentoServiceJPA implements DescuentoService {
         try {
             tx.begin();
 
-            Tarjeta tarjeta = new Tarjeta(marcaTarjeta);
-            PromocionCompra promocionCompra = new PromocionCompra(fechaDesde, fechaHasta, porcentaje, tarjeta);
+            TypedQuery<Tarjeta> query = em.createQuery("SELECT t FROM Tarjeta t WHERE t.nombre = :marcaTarjeta", Tarjeta.class);
+            query.setParameter("marcaTarjeta", marcaTarjeta);
+            Tarjeta tarjeta = query.getSingleResult();
 
+            if (tarjeta == null) {
+                throw new RuntimeException("No se encontró la tarjeta con la marca: " + marcaTarjeta);
+            }
+
+            PromocionCompra promocionCompra = new PromocionCompra(fechaDesde, fechaHasta, porcentaje, tarjeta);
             em.persist(promocionCompra);
 
             tx.commit();

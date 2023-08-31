@@ -1,5 +1,6 @@
 package ar.unrn.tp.modelo.promocion;
 
+import ar.unrn.tp.modelo.Marca;
 import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class Promocion {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column(name = "fecha_inicio")
     protected LocalDate fechaInicio;
@@ -27,6 +28,14 @@ public abstract class Promocion {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.descuento = descuento;
+    }
+
+    public boolean esDescuento(double descuento) {
+        return this.descuento == descuento;
+    }
+
+    public boolean esFecha(LocalDate fechaInicio, LocalDate fechaFin) {
+        return (this.fechaInicio.equals(fechaInicio) && this.fechaFin.equals(fechaFin));
     }
 
     public abstract double calcularDescuento(Tarjeta tarjeta);

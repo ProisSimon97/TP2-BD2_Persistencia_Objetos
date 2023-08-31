@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.util.Objects;
 
 @Entity
 public class Tarjeta {
@@ -34,6 +35,10 @@ public class Tarjeta {
         return this.activa;
     }
 
+    public Long id() {
+        return this.id;
+    }
+
     public double fondos() {
         return this.fondosDisponibles;
     }
@@ -53,6 +58,11 @@ public class Tarjeta {
 
         this.fondosDisponibles -= monto;
     }
+
+    public boolean esTarjeta(Tarjeta tarjeta) {
+        return this.nombre.equals(tarjeta.getNombre());
+    }
+
     private String getNombre() {
         return nombre;
     }
@@ -91,5 +101,18 @@ public class Tarjeta {
 
     private void setFondosDisponibles(double fondosDisponibles) {
         this.fondosDisponibles = fondosDisponibles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Tarjeta tarjeta = (Tarjeta) o;
+        return Objects.equals(numeroTarjeta, tarjeta.numeroTarjeta);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numeroTarjeta);
     }
 }

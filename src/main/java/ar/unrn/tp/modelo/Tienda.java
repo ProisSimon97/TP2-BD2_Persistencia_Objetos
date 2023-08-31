@@ -1,17 +1,11 @@
 package ar.unrn.tp.modelo;
 
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
 public class Tienda {
-    @Id
-    @GeneratedValue
-    private Long id;
-    @OneToMany(cascade = CascadeType.PERSIST)
     private List<Producto> productos;
-    @OneToMany(cascade = CascadeType.PERSIST)
+
     private List<Venta> ventas;
 
     protected Tienda() {

@@ -7,7 +7,7 @@ import java.util.List;
 @Entity
 public class Venta {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private LocalDate fecha;
     @ManyToOne
@@ -24,5 +24,9 @@ public class Venta {
         this.cliente = cliente;
         this.productosComprados = productosComprados;
         this.montoTotal = montoTotal;
+    }
+
+    public void productos(List<Producto> productos) {
+        this.productosComprados = productos;
     }
 }

@@ -57,7 +57,7 @@ public class ProductoServiceJPA implements ProductoService {
             tx.begin();
 
             Categoria categoria = em.find(Categoria.class, idCategoria);
-            Producto producto = em.getReference(Producto.class, idProducto);
+            Producto producto = em.find(Producto.class, idProducto);
 
             if(producto == null) {
                 throw new RuntimeException("El producto solicitado no existe");
