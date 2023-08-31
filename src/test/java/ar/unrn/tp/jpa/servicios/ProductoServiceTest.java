@@ -4,7 +4,9 @@ import ar.unrn.tp.api.ProductoService;
 import ar.unrn.tp.modelo.Categoria;
 import ar.unrn.tp.modelo.Producto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
@@ -19,20 +21,32 @@ import static org.junit.Assert.assertTrue;
 public class ProductoServiceTest {
     private static final String UNIT_NAME = "objectdb:test.tmp;drop";
     private static ProductoService productoService;
+    private EntityManagerFactory emf;
+    private Categoria categoria;
+    private Categoria categoria2;
 
-    @Test
-    public void Should_BeTrue_When_AProductIsCreated() {
-        Categoria categoria = new Categoria("Deportes");
+    @BeforeEach
+    public void setUp() {
+        emf = Persistence.createEntityManagerFactory(UNIT_NAME);
+
+        categoria = new Categoria("Deportes");
+        categoria2 = new Categoria("Ropa de cama");
+
 
         inTransactionExecute((em) -> {
             em.persist(categoria);
+            em.persist(categoria2);
         });
 
-        productoService = new ProductoServiceJPA(UNIT_NAME);
+        productoService = new ProductoServiceJPA(emf);
         productoService.crearProducto("777", "Producto de prueba", 55, "Acme", 1L);
+        productoService.crearProducto("888", "Producto de prueba 2", 75, "Raft", 1L);
+    }
 
+    @Test
+    public void Should_BeTrue_When_AProductIsCreated() {
         inTransactionExecute((em) -> {
-            Producto producto = em.find(Producto.class, 1L);
+            Producto producto = em.find(Producto.class, 3L);
 
             assertTrue(producto.esCodigo("777"));
             assertTrue(producto.esDescripcion("Producto de prueba"));
@@ -43,15 +57,7 @@ public class ProductoServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_CategoryIsInvalid() {
-        Categoria categoria = new Categoria("Deportes");
-
-        inTransactionExecute((em) -> {
-            em.persist(categoria);
-        });
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
-
-        RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
+     RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             productoService.crearProducto("777", "Producto de prueba", 55, "Acme", 55L);
         });
 
@@ -60,20 +66,10 @@ public class ProductoServiceTest {
 
     @Test
     public void Should_BeTrue_When_AProductIsModified() {
-        Categoria categoria = new Categoria("Deportes");
-        Categoria categoria2 = new Categoria("Ropa");
+       productoService.modificarProducto(3L, "555", "Prueba modificada", 60, 2L);
 
         inTransactionExecute((em) -> {
-            em.persist(categoria);
-            em.persist(categoria2);
-        });
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
-        productoService.crearProducto("777", "Producto de prueba", 55, "Acme", 1L);
-        productoService.modificarProducto(1L, "555", "Prueba modificada", 60, 2L);
-
-        inTransactionExecute((em) -> {
-            Producto producto = em.find(Producto.class, 1L);
+            Producto producto = em.find(Producto.class, 3L);
 
             assertTrue(producto.esCodigo("555"));
             assertTrue(producto.esDescripcion("Prueba modificada"));
@@ -84,15 +80,6 @@ public class ProductoServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_ProductIsInvalid() {
-        Categoria categoria = new Categoria("Deportes");
-
-        inTransactionExecute((em) -> {
-            em.persist(categoria);
-        });
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
-        productoService.crearProducto("777", "Producto de prueba", 55, "Acme", 1L);
-
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             productoService.modificarProducto(312L, "555", "Prueba modificada", 60, 1L);
         });
@@ -102,17 +89,7 @@ public class ProductoServiceTest {
 
     @Test
     public void Should_BeTrue_When_ProductListIsNotEmpty() {
-        Categoria categoria = new Categoria("Deportes");
-
-        inTransactionExecute((em) -> {
-            em.persist(categoria);
-        });
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
-        productoService.crearProducto("777", "Producto de prueba", 55, "Acme", 1L);
-        productoService.crearProducto("888", "Producto de prueba 2", 75, "Raft", 1L);
-
-        inTransactionExecute(
+       inTransactionExecute(
                 (em) -> {
                     List<Tarjeta> productos = productoService.listarProductos();
                     assertTrue(!productos.isEmpty());
@@ -121,7 +98,6 @@ public class ProductoServiceTest {
     }
 
     public void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(UNIT_NAME);
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
 
@@ -139,5 +115,10 @@ public class ProductoServiceTest {
             if (em != null && em.isOpen())
                 em.close();
         }
+    }
+
+    @AfterEach
+    public void tearDown() {
+        emf.close();
     }
 }

@@ -8,23 +8,18 @@ import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.function.Consumer;
 
 public class DescuentoServiceJPA implements DescuentoService {
 
-    private String unit;
+    private EntityManagerFactory emf;
 
-    public DescuentoServiceJPA(String unit) {
-        this.unit = unit;
+    public DescuentoServiceJPA(EntityManagerFactory emf) {
+        this.emf = emf;
     }
     @Override
     public void crearDescuentoSobreTotal(String marcaTarjeta, LocalDate fechaDesde, LocalDate fechaHasta, double porcentaje) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
-        try {
-            tx.begin();
-
+        inTransactionExecute((em) -> {
             TypedQuery<Tarjeta> query = em.createQuery("SELECT t FROM Tarjeta t WHERE t.nombre = :marcaTarjeta", Tarjeta.class);
             query.setParameter("marcaTarjeta", marcaTarjeta);
             Tarjeta tarjeta = query.getSingleResult();
@@ -35,39 +30,33 @@ public class DescuentoServiceJPA implements DescuentoService {
 
             PromocionCompra promocionCompra = new PromocionCompra(fechaDesde, fechaHasta, porcentaje, tarjeta);
             em.persist(promocionCompra);
-
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw new RuntimeException(e);
-        } finally {
-            if (em != null && em.isOpen())
-                em.close();
-        }
+        });
     }
 
     @Override
     public void crearDescuento(String marcaProducto, LocalDate fechaDesde, LocalDate fechaHasta, double porcentaje) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
+        inTransactionExecute((em) -> {
+            Marca marca = new Marca(marcaProducto);
+            PromocionProducto promocionProducto = new PromocionProducto(fechaDesde, fechaHasta, porcentaje, marca);
+
+            em.persist(promocionProducto);
+        });
+    }
+
+    public void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
 
         try {
             tx.begin();
 
-            Marca marca = new Marca(marcaProducto);
-            PromocionProducto promocionProducto = new PromocionProducto(fechaDesde, fechaHasta, porcentaje, marca);
-
-            em.persist(promocionProducto);
+            bloqueDeCodigo.accept(em);
 
             tx.commit();
+
         } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw new RuntimeException(e);
+            tx.rollback();
+            throw e;
         } finally {
             if (em != null && em.isOpen())
                 em.close();

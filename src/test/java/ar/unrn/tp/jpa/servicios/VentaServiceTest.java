@@ -5,7 +5,9 @@ import ar.unrn.tp.api.DescuentoService;
 import ar.unrn.tp.api.ProductoService;
 import ar.unrn.tp.api.VentaService;
 import ar.unrn.tp.modelo.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
@@ -28,11 +30,17 @@ public class VentaServiceTest {
     private static DescuentoService descuentoService;
     private static ProductoService productoService;
 
+    private EntityManagerFactory emf;
+
+    @BeforeEach
     public void setUp() {
 
-        clienteService = new ClienteServiceJPA(UNIT_NAME);
-        productoService = new ProductoServiceJPA(UNIT_NAME);
-        descuentoService = new DescuentoServiceJPA(UNIT_NAME);
+        emf = Persistence.createEntityManagerFactory(UNIT_NAME);
+
+        ventaService = new VentaServiceJPA(emf);
+        clienteService = new ClienteServiceJPA(emf);
+        productoService = new ProductoServiceJPA(emf);
+        descuentoService = new DescuentoServiceJPA(emf);
 
         inTransactionExecute((em) -> {
             Categoria categoria = new Categoria("Ropa deportiva");
@@ -52,9 +60,6 @@ public class VentaServiceTest {
 
     @Test
     public void Should_BeTrue_When_ASaleIsMade() {
-        setUp();
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
         List<Producto> productos = productoService.listarProductos();
 
         List<Long> idsProductos = new ArrayList<>();
@@ -62,8 +67,7 @@ public class VentaServiceTest {
         productos.forEach(p -> {
             idsProductos.add(p.id());
         });
-        
-        ventaService = new VentaServiceJPA(UNIT_NAME);
+
         ventaService.realizarVenta(2L, idsProductos, 5L);
 
         inTransactionExecute((em) -> {
@@ -74,9 +78,6 @@ public class VentaServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_ASaleIsMadeWithoutAValidClient() {
-        setUp();
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
         List<Producto> productos = productoService.listarProductos();
 
         List<Long> idsProductos = new ArrayList<>();
@@ -84,8 +85,6 @@ public class VentaServiceTest {
         productos.forEach(p -> {
             idsProductos.add(p.id());
         });
-
-        ventaService = new VentaServiceJPA(UNIT_NAME);
 
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             ventaService.realizarVenta(65L, idsProductos, 5L);
@@ -96,9 +95,6 @@ public class VentaServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_ASaleIsMadeWithoutAValidCard() {
-        setUp();
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
         List<Producto> productos = productoService.listarProductos();
 
         List<Long> idsProductos = new ArrayList<>();
@@ -106,8 +102,6 @@ public class VentaServiceTest {
         productos.forEach(p -> {
             idsProductos.add(p.id());
         });
-
-        ventaService = new VentaServiceJPA(UNIT_NAME);
 
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             ventaService.realizarVenta(2L, idsProductos, 15L);
@@ -118,11 +112,7 @@ public class VentaServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_ASaleIsMadeWithoutAProductList() {
-        setUp();
-
         List<Long> idsProductos = new ArrayList<>();
-
-        ventaService = new VentaServiceJPA(UNIT_NAME);
 
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             ventaService.realizarVenta(2L, idsProductos, 5L);
@@ -133,9 +123,6 @@ public class VentaServiceTest {
 
     @Test
     public void Should_BeTrue_When_TryCalculateAmount() {
-        setUp();
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
         List<Producto> productos = productoService.listarProductos();
 
         List<Long> idsProductos = new ArrayList<>();
@@ -144,18 +131,12 @@ public class VentaServiceTest {
             idsProductos.add(p.id());
         });
 
-        ventaService = new VentaServiceJPA(UNIT_NAME);
-
         Assertions.assertEquals(ventaService.calcularMonto(idsProductos, 5L), 5200);
     }
 
     @Test
     public void Should_ThrowRuntimeException_When_TryCalculateAmountWithoutAProductList() {
-        setUp();
-
         List<Long> idsProductos = new ArrayList<>();
-
-        ventaService = new VentaServiceJPA(UNIT_NAME);
 
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             ventaService.calcularMonto(idsProductos, 5L);
@@ -166,9 +147,6 @@ public class VentaServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_TryCalculateAmountWithoutAValidCard() {
-        setUp();
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
         List<Producto> productos = productoService.listarProductos();
 
         List<Long> idsProductos = new ArrayList<>();
@@ -176,8 +154,6 @@ public class VentaServiceTest {
         productos.forEach(p -> {
             idsProductos.add(p.id());
         });
-
-        ventaService = new VentaServiceJPA(UNIT_NAME);
 
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             ventaService.calcularMonto(idsProductos, 15L);
@@ -188,9 +164,6 @@ public class VentaServiceTest {
 
     @Test
     public void Should_BeTrue_When_SalesListIsNotEmpty() {
-        setUp();
-
-        productoService = new ProductoServiceJPA(UNIT_NAME);
         List<Producto> productos = productoService.listarProductos();
 
         List<Long> idsProductos = new ArrayList<>();
@@ -199,7 +172,6 @@ public class VentaServiceTest {
             idsProductos.add(p.id());
         });
 
-        ventaService = new VentaServiceJPA(UNIT_NAME);
         ventaService.realizarVenta(2L, idsProductos, 5L);
 
         List<Venta> ventas = ventaService.ventas();
@@ -208,7 +180,6 @@ public class VentaServiceTest {
     }
 
     public void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(UNIT_NAME);
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
 
@@ -226,5 +197,10 @@ public class VentaServiceTest {
             if (em != null && em.isOpen())
                 em.close();
         }
+    }
+
+    @AfterEach
+    public void tearDown() {
+        emf.close();
     }
 }

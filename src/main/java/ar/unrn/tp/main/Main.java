@@ -22,9 +22,13 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class Main {
     private static final String UNIT_NAME = "objectdb:test.tmp;drop";
+    private static EntityManagerFactory emf;
     private static ClienteService clienteService;
     private static DescuentoService descuentoService;
     private static ProductoService productoService;
@@ -32,40 +36,49 @@ public class Main {
 
     public static void main(String[] args) {
 
-        clienteService = new ClienteServiceJPA(UNIT_NAME);
-        descuentoService = new DescuentoServiceJPA(UNIT_NAME);
-        productoService = new ProductoServiceJPA(UNIT_NAME);
-        ventaService = new VentaServiceJPA(UNIT_NAME);
+        emf = Persistence.createEntityManagerFactory(UNIT_NAME);
 
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(UNIT_NAME);
+        clienteService = new ClienteServiceJPA(emf);
+        descuentoService = new DescuentoServiceJPA(emf);
+        productoService = new ProductoServiceJPA(emf);
+        ventaService = new VentaServiceJPA(emf);
+
+        inTransactionExecute((em) -> {
+            Categoria categoria = new Categoria("Ropa deportiva");
+            em.persist(categoria);
+        });
+
+        clienteService.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
+        clienteService.agregarTarjeta(2L, "7777", "Visa", 15000);
+
+        productoService.crearProducto("777", "Remera", 15000, "Adudas", 1L);
+
+        descuentoService.crearDescuento("Adudas", LocalDate.now().minusDays(2), LocalDate.now().plusDays(2), 0.5);
+        descuentoService.crearDescuentoSobreTotal("Visa", LocalDate.now().minusDays(2), LocalDate.now().plusDays(2), 0.8);
+
+        List<Long> productos = new ArrayList<>();
+        productos.add(4L);
+
+        ventaService.realizarVenta(2L, productos, 3L);
+    }
+
+    public static void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
-
-        Cliente cliente = new Cliente("Simon", "Preuss", "39870345", "simon@gmail.com");
-        Tarjeta tarjeta = new Tarjeta(1500000, "Visa", "34595465465454");
-        cliente.agregarTarjeta(tarjeta);
-
-        Marca marca = new Marca("Adudas");
-        Categoria categoria = new Categoria("Ropa deportiva");
-        Producto producto1 = new Producto("777", "Remera crossfit", categoria, 15000, marca);
-        Producto producto2 = new Producto("555", "Pantalon largo", categoria, 15000, marca);
-
-        PromocionProducto promocionProducto = new PromocionProducto(LocalDate.now().minusDays(2), LocalDate.now().plusDays(2), 0.5, marca);
-        PromocionCompra promocionCompra = new PromocionCompra(LocalDate.now().minusDays(2), LocalDate.now().plusDays(2), 0.8, tarjeta);
 
         try {
             tx.begin();
 
+            bloqueDeCodigo.accept(em);
 
             tx.commit();
+
         } catch (Exception e) {
             tx.rollback();
-            throw new RuntimeException(e);
+            throw e;
         } finally {
             if (em != null && em.isOpen())
                 em.close();
-            if (emf != null)
-                emf.close();
         }
     }
 }

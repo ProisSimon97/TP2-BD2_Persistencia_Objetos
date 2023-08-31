@@ -3,7 +3,9 @@ package ar.unrn.tp.jpa.servicios;
 import ar.unrn.tp.api.ClienteService;
 import ar.unrn.tp.modelo.Cliente;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
@@ -18,12 +20,18 @@ import static org.junit.Assert.assertTrue;
 public class ClienteServiceTest {
     private static final String UNIT_NAME = "objectdb:test.tmp;drop";
     private static ClienteService clienteService;
+    private EntityManagerFactory emf;
+
+    @BeforeEach
+    public void setUp() {
+        emf = Persistence.createEntityManagerFactory(UNIT_NAME);
+
+        clienteService = new ClienteServiceJPA(emf);
+        clienteService.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
+    }
+
     @Test
     public void Should_BeTrue_When_AClientIsCreated() {
-
-        clienteService = new ClienteServiceJPA(UNIT_NAME);
-        clienteService.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
-
         inTransactionExecute((em) -> {
             Cliente cliente = em.find(Cliente.class, 1L);
 
@@ -37,9 +45,7 @@ public class ClienteServiceTest {
 
     @Test
     public void Should_BeTrue_When_AClientIsModified() {
-        ClienteServiceJPA clienteServiceJPA = new ClienteServiceJPA(UNIT_NAME);
-        clienteServiceJPA.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
-        clienteServiceJPA.modificarCliente(1L, "Saimon", "Pelotto", "39870344", "simonpreuss@gmail.com");
+        clienteService.modificarCliente(1L, "Saimon", "Pelotto", "39870344", "simonpreuss@gmail.com");
 
         inTransactionExecute(
                 (em) -> {
@@ -55,9 +61,7 @@ public class ClienteServiceTest {
 
     @Test
     public void Should_BeTrue_When_ACardIsAdded() {
-        ClienteServiceJPA clienteServiceJPA = new ClienteServiceJPA(UNIT_NAME);
-        clienteServiceJPA.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
-        clienteServiceJPA.agregarTarjeta(1L, "123456", "MemeCard", 150000);
+        clienteService.agregarTarjeta(1L, "123456", "MemeCard", 150000);
 
         inTransactionExecute(
                 (em) -> {
@@ -69,13 +73,11 @@ public class ClienteServiceTest {
 
     @Test
     public void Should_BeTrue_When_ClientCardListIsNotEmpty() {
-        ClienteServiceJPA clienteServiceJPA = new ClienteServiceJPA(UNIT_NAME);
-        clienteServiceJPA.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
-        clienteServiceJPA.agregarTarjeta(1L, "123456", "MemeCard", 150000);
+        clienteService.agregarTarjeta(1L, "123456", "MemeCard", 150000);
 
         inTransactionExecute(
                 (em) -> {
-                    List<Tarjeta> tarjetas = clienteServiceJPA.listarTarjetas(1L);
+                    List<Tarjeta> tarjetas = clienteService.listarTarjetas(1L);
                     assertTrue(!tarjetas.isEmpty());
                 }
         );
@@ -83,10 +85,6 @@ public class ClienteServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_ClientDontExist() {
-
-        clienteService = new ClienteServiceJPA(UNIT_NAME);
-        clienteService.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
-
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             clienteService.modificarCliente(5L,"Simo", "Preus", "39870345", "simon@gmail.com");
         });
@@ -96,10 +94,6 @@ public class ClienteServiceTest {
 
     @Test
     public void Should_ThrowRuntimeException_When_ClientDniAlreadyExists() {
-
-        clienteService = new ClienteServiceJPA(UNIT_NAME);
-        clienteService.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
-
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
             clienteService.crearCliente("Simon", "Preuss", "39870345", "simon@gmail.com");
         });
@@ -108,7 +102,6 @@ public class ClienteServiceTest {
     }
 
     public void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(UNIT_NAME);
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
 
@@ -126,5 +119,10 @@ public class ClienteServiceTest {
             if (em != null && em.isOpen())
                 em.close();
         }
+    }
+
+    @AfterEach
+    public void tearDown() {
+        emf.close();
     }
 }

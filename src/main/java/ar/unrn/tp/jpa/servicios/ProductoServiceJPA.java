@@ -2,29 +2,23 @@ package ar.unrn.tp.jpa.servicios;
 
 import ar.unrn.tp.api.ProductoService;
 import ar.unrn.tp.modelo.Categoria;
-import ar.unrn.tp.modelo.Cliente;
 import ar.unrn.tp.modelo.Marca;
 import ar.unrn.tp.modelo.Producto;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ProductoServiceJPA implements ProductoService {
 
-    private String unit;
+    private EntityManagerFactory emf;
 
-    public ProductoServiceJPA(String unit) {
-        this.unit = unit;
+    public ProductoServiceJPA(EntityManagerFactory emf) {
+        this.emf = emf;
     }
     @Override
     public void crearProducto(String codigo, String descripcion, double precio, String marca, Long idCategoria) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
-        try {
-            tx.begin();
-
+        inTransactionExecute((em) -> {
             Categoria categoria = em.find(Categoria.class, idCategoria);
 
             if(categoria == null) {
@@ -34,28 +28,12 @@ public class ProductoServiceJPA implements ProductoService {
             Marca marcaProducto = new Marca(marca);
             Producto producto = new Producto(codigo, descripcion, categoria, precio, marcaProducto);
             em.persist(producto);
-
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw new RuntimeException(e);
-        } finally {
-            if (em != null && em.isOpen())
-                em.close();
-        }
+        });
     }
 
     @Override
     public void modificarProducto(Long idProducto, String codigo, String descripcion, double precio, Long idCategoria) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-
-        try {
-            tx.begin();
-
+        inTransactionExecute((em) -> {
             Categoria categoria = em.find(Categoria.class, idCategoria);
             Producto producto = em.find(Producto.class, idProducto);
 
@@ -71,22 +49,11 @@ public class ProductoServiceJPA implements ProductoService {
             producto.descripcion(descripcion);
             producto.precio(precio);
             producto.categoria(categoria);
-
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw new RuntimeException(e);
-        } finally {
-            if (em != null && em.isOpen())
-                em.close();
-        }
+        });
     }
 
     @Override
     public List listarProductos() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
 
@@ -99,6 +66,26 @@ public class ProductoServiceJPA implements ProductoService {
                 tx.rollback();
             }
             throw new RuntimeException(e);
+        } finally {
+            if (em != null && em.isOpen())
+                em.close();
+        }
+    }
+
+    public void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            bloqueDeCodigo.accept(em);
+
+            tx.commit();
+
+        } catch (Exception e) {
+            tx.rollback();
+            throw e;
         } finally {
             if (em != null && em.isOpen())
                 em.close();

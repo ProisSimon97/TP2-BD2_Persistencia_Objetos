@@ -12,74 +12,58 @@ import ar.unrn.tp.modelo.tarjeta.Tarjeta;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class VentaServiceJPA implements VentaService {
 
-    private String unit;
+    private EntityManagerFactory emf;
 
-    public VentaServiceJPA(String unit) {
-        this.unit = unit;
+    public VentaServiceJPA(EntityManagerFactory emf) {
+        this.emf = emf;
     }
 
     @Override
     public void realizarVenta(Long idCliente, List<Long> productos, Long idTarjeta) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
+       inTransactionExecute((em) -> {
+           Cliente cliente = em.find(Cliente.class, idCliente);
+           if (cliente == null)
+               throw new RuntimeException("No existe el cliente solicitado");
 
-        try {
-            tx.begin();
+           Tarjeta tarjeta = em.find(Tarjeta.class, idTarjeta);
+           if (tarjeta == null)
+               throw new RuntimeException("No existe la tarjeta solicitada");
 
-            Cliente cliente = em.find(Cliente.class, idCliente);
-            if (cliente == null)
-                throw new RuntimeException("No existe el cliente solicitado");
+           if (!cliente.miTarjeta(tarjeta))
+               throw new RuntimeException("La tarjeta no coincide con el regristro de tarjetas del cliente");
 
-            Tarjeta tarjeta = em.find(Tarjeta.class, idTarjeta);
-            if (tarjeta == null)
-                throw new RuntimeException("No existe la tarjeta solicitada");
+           if(productos.isEmpty()) {
+               throw new RuntimeException("No hay productos para esta lista");
+           }
 
-            if (!cliente.miTarjeta(tarjeta))
-                throw new RuntimeException("La tarjeta no coincide con el regristro de tarjetas del cliente");
+           TypedQuery<Producto> queryProductos = em.createQuery("select p from Producto p where p.id in :productos", Producto.class);
+           queryProductos.setParameter("productos", productos);
+           List<Producto> productosBd = queryProductos.getResultList();
 
-            if(productos.isEmpty()) {
-                throw new RuntimeException("No hay productos para esta lista");
-            }
+           TypedQuery<PromocionProducto> queryPromocionesProducto = em.createQuery("select p from PromocionProducto p where :now between p.fechaInicio and p.fechaFin", PromocionProducto.class);
+           queryPromocionesProducto.setParameter("now", LocalDate.now());
+           List<PromocionProducto> promocionesProducto = queryPromocionesProducto.getResultList();
 
-            TypedQuery<Producto> queryProductos = em.createQuery("select p from Producto p where p.id in :productos", Producto.class);
-            queryProductos.setParameter("productos", productos);
-            List<Producto> productosBd = queryProductos.getResultList();
+           TypedQuery<PromocionCompra> queryPromocionesCompra = em.createQuery("select p from PromocionCompra p where :now between p.fechaInicio and p.fechaFin", PromocionCompra.class);
+           queryPromocionesCompra.setParameter("now", LocalDate.now());
+           PromocionCompra promocionCompra = queryPromocionesCompra.getSingleResult();
 
-            TypedQuery<PromocionProducto> queryPromocionesProducto = em.createQuery("select p from PromocionProducto p where :now between p.fechaInicio and p.fechaFin", PromocionProducto.class);
-            queryPromocionesProducto.setParameter("now", LocalDate.now());
-            List<PromocionProducto> promocionesProducto = queryPromocionesProducto.getResultList();
+           Carrito carrito = new Carrito(cliente);
 
-            TypedQuery<PromocionCompra> queryPromocionesCompra = em.createQuery("select p from PromocionCompra p where :now between p.fechaInicio and p.fechaFin", PromocionCompra.class);
-            queryPromocionesCompra.setParameter("now", LocalDate.now());
-            PromocionCompra promocionCompra = queryPromocionesCompra.getSingleResult();
+           carrito.agregarProductos(productosBd);
 
-            Carrito carrito = new Carrito(cliente);
+           Venta venta = carrito.realizarCompra(promocionesProducto, promocionCompra, tarjeta);
 
-            carrito.agregarProductos(productosBd);
-
-            Venta venta = carrito.realizarCompra(promocionesProducto, promocionCompra, tarjeta);
-
-            em.persist(venta);
-
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw new RuntimeException(e);
-        } finally {
-            if (em != null && em.isOpen())
-                em.close();
-        }
+           em.persist(venta);
+       });
     }
 
     @Override
     public float calcularMonto(List<Long> productos, Long idTarjeta) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
         EntityManager em = emf.createEntityManager();
 
         try {
@@ -125,7 +109,6 @@ public class VentaServiceJPA implements VentaService {
 
     @Override
     public List ventas() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(this.unit);
         EntityManager em = emf.createEntityManager();
 
         try {
@@ -134,6 +117,26 @@ public class VentaServiceJPA implements VentaService {
 
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            if (em != null && em.isOpen())
+                em.close();
+        }
+    }
+
+    public void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            bloqueDeCodigo.accept(em);
+
+            tx.commit();
+
+        } catch (Exception e) {
+            tx.rollback();
+            throw e;
         } finally {
             if (em != null && em.isOpen())
                 em.close();

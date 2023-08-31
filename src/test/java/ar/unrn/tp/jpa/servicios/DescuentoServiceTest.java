@@ -5,12 +5,11 @@ import ar.unrn.tp.modelo.Marca;
 import ar.unrn.tp.modelo.promocion.PromocionCompra;
 import ar.unrn.tp.modelo.promocion.PromocionProducto;
 import ar.unrn.tp.modelo.tarjeta.Tarjeta;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.function.Consumer;
 
@@ -20,6 +19,13 @@ public class DescuentoServiceTest {
 
     private static final String UNIT_NAME = "objectdb:test.tmp;drop";
     private static DescuentoService descuentoService;
+    private EntityManagerFactory emf;
+    @BeforeEach
+    public void setUp() {
+        emf = Persistence.createEntityManagerFactory(UNIT_NAME);
+
+        descuentoService = new DescuentoServiceJPA(emf);
+    }
 
     @Test
     public void Should_BeTrue_When_AProductDiscountIsCreated() {
@@ -28,12 +34,14 @@ public class DescuentoServiceTest {
         LocalDate fechaFin = LocalDate.now().plusDays(2);
         Marca marca = new Marca("Acme");
 
-        descuentoService = new DescuentoServiceJPA(UNIT_NAME);
         descuentoService.crearDescuento("Acme", fechaInicio, fechaFin, 0.5);
 
         inTransactionExecute((em) -> {
 
-            PromocionProducto promocionProducto = em.find(PromocionProducto.class, 1L);
+            TypedQuery<PromocionProducto> query = em.createQuery("SELECT p FROM PromocionProducto p WHERE p.descuento = :descuento", PromocionProducto.class);
+            query.setParameter("descuento", 0.5);
+            PromocionProducto promocionProducto =  query.getSingleResult();
+
             assertTrue(promocionProducto.esFecha(fechaInicio, fechaFin));
             assertTrue(promocionProducto.esMarca(marca.getTipo()));
             assertTrue(promocionProducto.esDescuento(0.5));
@@ -45,18 +53,20 @@ public class DescuentoServiceTest {
 
         LocalDate fechaInicio = LocalDate.now().minusDays(2);
         LocalDate fechaFin = LocalDate.now().plusDays(2);
-        Tarjeta tarjeta = new Tarjeta(1500, "Ibiza", "759958992654");
+        Tarjeta tarjeta = new Tarjeta(150000, "Ivisa", "759958992654");
 
         inTransactionExecute((em) -> {
             em.persist(tarjeta);
         });
 
-        descuentoService = new DescuentoServiceJPA(UNIT_NAME);
-        descuentoService.crearDescuentoSobreTotal("Ibiza", fechaInicio, fechaFin, 0.8);
+        descuentoService.crearDescuentoSobreTotal("Ivisa", fechaInicio, fechaFin, 0.8);
 
         inTransactionExecute((em) -> {
 
-            PromocionCompra promocionCompra = em.find(PromocionCompra.class, 1L);
+            TypedQuery<PromocionCompra> query = em.createQuery("SELECT p FROM PromocionCompra p WHERE p.descuento = :descuento", PromocionCompra.class);
+            query.setParameter("descuento", 0.8);
+            PromocionCompra promocionCompra =  query.getSingleResult();
+
             assertTrue(promocionCompra.esFecha(fechaInicio, fechaFin));
             assertTrue(promocionCompra.esTarjeta(tarjeta));
             assertTrue(promocionCompra.esDescuento(0.8));
@@ -64,7 +74,6 @@ public class DescuentoServiceTest {
     }
 
     public void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory(UNIT_NAME);
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
 
@@ -82,5 +91,10 @@ public class DescuentoServiceTest {
             if (em != null && em.isOpen())
                 em.close();
         }
+    }
+
+    @AfterEach
+    public void tearDown() {
+        emf.close();
     }
 }
