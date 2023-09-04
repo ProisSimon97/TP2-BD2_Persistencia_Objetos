@@ -51,9 +51,13 @@ public class Carrito {
     public Venta realizarCompra(List <PromocionProducto> promocionProducto, PromocionCompra promocionCompra, Tarjeta tarjeta) {
         double totalCompra = calcularMontoTotalConDescuento(promocionProducto, promocionCompra, tarjeta);
 
+        List<ProductoVendido> productoVendidos = productos.stream()
+                .map(ProductoVendido::mapProductoToProductoVendido)
+                .toList();
+
         try {
             tarjeta.realizarPago(totalCompra);
-            return new Venta(LocalDate.now(), this.cliente, productos, totalCompra);
+            return new Venta(LocalDate.now(), this.cliente, productoVendidos, totalCompra);
         } catch(RuntimeException e) {
             throw e;
         }

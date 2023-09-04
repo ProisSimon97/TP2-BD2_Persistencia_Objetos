@@ -13,20 +13,16 @@ public class Venta {
     @ManyToOne
     private Cliente cliente;
     @OneToMany(cascade = CascadeType.PERSIST)
-    private List<Producto> productosComprados;
+    private List<ProductoVendido> productosComprados;
     @Column(name = "monto_total")
     private double montoTotal;
 
     protected Venta() { }
 
-    public Venta(LocalDate fechaHora, Cliente cliente, List<Producto> productosComprados, double montoTotal) {
+    public Venta(LocalDate fechaHora, Cliente cliente, List<ProductoVendido> productosComprados, double montoTotal) {
         this.fecha = fechaHora;
         this.cliente = cliente;
         this.productosComprados = productosComprados;
         this.montoTotal = montoTotal;
-    }
-
-    public void productos(List<Producto> productos) {
-        this.productosComprados = productos;
     }
 }

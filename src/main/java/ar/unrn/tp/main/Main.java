@@ -9,13 +9,6 @@ import ar.unrn.tp.jpa.servicios.DescuentoServiceJPA;
 import ar.unrn.tp.jpa.servicios.ProductoServiceJPA;
 import ar.unrn.tp.jpa.servicios.VentaServiceJPA;
 import ar.unrn.tp.modelo.Categoria;
-import ar.unrn.tp.modelo.Cliente;
-import ar.unrn.tp.modelo.Marca;
-import ar.unrn.tp.modelo.Producto;
-import ar.unrn.tp.modelo.promocion.PromocionCompra;
-import ar.unrn.tp.modelo.promocion.PromocionProducto;
-import ar.unrn.tp.modelo.tarjeta.Tarjeta;
-import com.objectdb.o.UNI;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -60,6 +53,8 @@ public class Main {
         productos.add(4L);
 
         ventaService.realizarVenta(2L, productos, 3L);
+
+        productoService.modificarProducto(4L, "555", "Modificaodo", 12500, 1L);
     }
 
     public static void inTransactionExecute(Consumer<EntityManager> bloqueDeCodigo) {

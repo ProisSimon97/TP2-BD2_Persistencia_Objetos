@@ -1,13 +1,17 @@
 package ar.unrn.tp.modelo;
 
+import lombok.Builder;
+
 import javax.persistence.*;
 
 @Entity
-public class Producto {
+@Builder
+public class ProductoVendido {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(unique = true)
+    @Column(unique = false)
     private String codigo;
     private String descripcion;
     @ManyToOne(cascade = CascadeType.PERSIST)
@@ -16,9 +20,9 @@ public class Producto {
     @Embedded
     private Marca marca;
 
-    protected Producto() { }
+    protected ProductoVendido() { }
 
-    public Producto(String codigo, String descripcion, Categoria categoria, double precio, Marca marca) throws RuntimeException {
+    public ProductoVendido(String codigo, String descripcion, Categoria categoria, double precio, Marca marca) throws RuntimeException {
 
         if (categoria == null || descripcion == null || codigo == null) {
             throw new RuntimeException("Los datos proporcionados no son válidos");
@@ -31,7 +35,7 @@ public class Producto {
         this.marca = marca;
     }
 
-    public Producto(Long id, String codigo, String descripcion, Categoria categoria, double precio, Marca marca) throws RuntimeException {
+    public ProductoVendido(Long id, String codigo, String descripcion, Categoria categoria, double precio, Marca marca) throws RuntimeException {
 
         if (categoria == null || descripcion == null || codigo == null) {
             throw new RuntimeException("Los datos proporcionados no son válidos");
@@ -45,50 +49,14 @@ public class Producto {
         this.marca = marca;
     }
 
-    public static Producto crearProducto(Producto producto) {
-        return (producto.getId() != null)
-                ? new Producto(producto.id, producto.codigo, producto.descripcion, producto.categoria, producto.precio, producto.marca)
-                : new Producto(producto.codigo, producto.descripcion, producto.categoria, producto.precio, producto.marca);
-    }
-
-    public boolean esMarca(Marca marca) {
-        return this.marca.equals(marca);
-    }
-
-    public boolean esMarca(String marca) { return this.marca.getTipo().equals(marca); }
-
-    public boolean esCodigo(String codigo) {
-        return this.codigo.equals(codigo);
-    }
-
-    public boolean esDescripcion(String descripcion) {
-        return this.descripcion.equals(descripcion);
-    }
-
-    public boolean esCategoria(Categoria categoria) {
-        return this.categoria.equals(categoria);
-    }
-
-    public Categoria categoria() {
-        return this.categoria;
-    }
-
-    public String descripcion() {
-        return  this.descripcion;
-    }
-
-    public String codigo() {
-        return this.codigo;
-    }
-
-    public double getPrecio() {
-        return this.precio;
-    }
-
-    public Long id() { return this.id; }
-
-    public Marca getMarca() {
-        return this.marca;
+    public static ProductoVendido mapProductoToProductoVendido(Producto producto) {
+        return ProductoVendido.builder()
+                .codigo(producto.codigo())
+                .descripcion(producto.descripcion())
+                .categoria(producto.categoria())
+                .precio(producto.getPrecio())
+                .marca(producto.getMarca())
+                .build();
     }
 
     private Long getId() {
